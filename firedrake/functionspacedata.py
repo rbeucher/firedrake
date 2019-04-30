@@ -217,11 +217,13 @@ def get_boundary_masks(mesh, key, finat_element):
     assert kind in {"cell", "interior_facet"}
     dim = finat_element.cell.get_spatial_dimension()
     ecd = finat_element.entity_closure_dofs()
+    ecd = eutils.tensor_product_cell_entity_dofs(mesh._ufl_cell, ecd)
     try:
         esd = finat_element.entity_support_dofs()
     except NotImplementedError:
         # 4-D cells
         esd = None
+    esd = eutils.tensor_product_cell_entity_dofs(mesh._ufl_cell, esd)
     # Number of entities on cell excepting the cell itself.
     chart = sum(map(len, ecd.values())) - 1
     closure_section = PETSc.Section().create(comm=PETSc.COMM_SELF)
@@ -395,6 +397,7 @@ class FunctionSpaceData(object):
 
     def __init__(self, mesh, finat_element, real_tensorproduct=False):
         entity_dofs = finat_element.entity_dofs()
+        entity_dofs = eutils.tensor_product_cell_entity_dofs(mesh._ufl_cell, entity_dofs)
         nodes_per_entity = tuple(mesh.make_dofs_per_plex_entity(entity_dofs))
 
         # Create the PetscSection mapping topological entities to functionspace nodes

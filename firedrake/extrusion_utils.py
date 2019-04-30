@@ -4,6 +4,8 @@ import numpy
 
 from pyop2 import op2
 from pyop2.datatypes import IntType
+from FIAT.reference_element import compute_unflattening_map
+from FIAT import ufc_cell
 
 
 def make_extruded_coords(extruded_topology, base_coords, ext_coords,
@@ -175,6 +177,23 @@ def flat_entity_dofs(entity_dofs):
                                       + entity_dofs[(b, 1)][i]
                                       + entity_dofs[(b, 0)][2*i+1])
     return flat_entity_dofs
+
+
+def tensor_product_cell_entity_dofs(cell, entity_dofs):
+    k = list(entity_dofs)
+    if type(k[0]) is tuple:
+        tpc_entity_dofs = entity_dofs
+    else:
+        tpc_entity_dofs = {}
+        for dim, entities in sorted(ufc_cell(cell).get_topology().items()):
+            tpc_entity_dofs[dim] = {}
+        unflattening_map = compute_unflattening_map(ufc_cell(cell).get_topology())
+        for dim, entities in entity_dofs.items():
+            for entity in entities:
+                unflattened_dim, unflattened_entity = unflattening_map[(dim, entity)]
+                tpc_entity_dofs[unflattened_dim][unflattened_entity] = entity_dofs[dim][entity]
+    return tpc_entity_dofs
+
 
 
 def entity_indices(cell):

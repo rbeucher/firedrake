@@ -868,6 +868,7 @@ class ExtrudedMeshTopology(MeshTopology):
         :arg entity_dofs: FInAT element entity DoFs
         :arg offsets: layer offsets for each entity dof.
         """
+        entity_dofs = eutils.tensor_product_cell_entity_dofs(self._ufl_cell, entity_dofs)
         entity_dofs = eutils.flat_entity_dofs(entity_dofs)
         return super().make_cell_node_list(global_numbering, entity_dofs, offsets)
 
@@ -881,6 +882,7 @@ class ExtrudedMeshTopology(MeshTopology):
         :arg entity_dofs: FInAT element entity DoFs
 
         """
+        entity_dofs = eutils.tensor_product_cell_entity_dofs(self._ufl_cell, entity_dofs)
         dofs_per_entity = np.zeros((1 + self._base_mesh.cell_dimension(), 2), dtype=IntType)
         for (b, v), entities in entity_dofs.items():
             dofs_per_entity[b, v] += len(entities[0])
@@ -910,6 +912,7 @@ class ExtrudedMeshTopology(MeshTopology):
         :arg entity_dofs: FInAT element entity DoFs
         :arg ndofs: number of DoFs in the FInAT element
         """
+        entity_dofs = eutils.tensor_product_cell_entity_dofs(self._ufl_cell, entity_dofs)
         entity_offset = [0] * (1 + self._base_mesh.cell_dimension())
         for (b, v), entities in entity_dofs.items():
             entity_offset[b] += len(entities[0])
